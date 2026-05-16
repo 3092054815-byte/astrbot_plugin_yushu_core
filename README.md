@@ -4,6 +4,19 @@
 
 > 设计边界：雨舒只在配置的 owner 私聊中启用陪练能力；群聊保持普通 bot/群友型行为，不注入 owner 私聊记忆。
 
+## 快速开始
+
+1. 下载 `astrbot_plugin_yushu_core-v0.1.0.tar.gz`，解压到 `AstrBot/data/plugins/astrbot_plugin_yushu_core`。
+2. 在 AstrBot WebUI 中加载或重载插件，并在插件配置页填写 `owner_user_ids`。
+3. 在 owner 私聊中运行 `/ys doctor` 和 `/ys config diff`，确认配置符合推荐状态。
+
+## 兼容性
+
+- 已在 AstrBot v4.24.2 验证。
+- 需要 AstrBot 支持 Plugin Pages，用于暴露 WebUI 管理页面。
+- 需要 AstrBot 支持 `on_llm_request`，用于在 LLM 请求前追加 owner 私聊提示词上下文。
+- 插件元数据声明 `astrbot_version: ">=4.24.2,<5"`。
+
 ## 功能概览
 
 - owner 私聊 live 提示词注入：只追加 `system_prompt`，不修改用户消息。
@@ -17,7 +30,7 @@
 
 ## 安装
 
-1. 将本目录放入 AstrBot 插件目录，例如：
+1. 将本目录或 release 压缩包解压后的目录放入 AstrBot 插件目录，例如：
 
    ```text
    AstrBot/data/plugins/astrbot_plugin_yushu_core
@@ -126,3 +139,7 @@ python3 -m json.tool _conf_schema.json >/tmp/yushu_release_schema_check.json
 - 状态机正式启用
 - proactive_chat / SpectreCore 适配器
 - 模型自动评测 runner
+
+## 许可证
+
+本项目使用 MIT License，详见 [LICENSE](LICENSE)。
