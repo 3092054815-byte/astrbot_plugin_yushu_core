@@ -1,0 +1,234 @@
+{
+  "yushu_private_enabled": {
+    "description": "启用 owner 私聊雨舒",
+    "type": "bool",
+    "hint": "只在配置的 owner 私聊中启用雨舒上下文、记忆和复盘能力；不影响群聊。推荐开启。",
+    "default": true
+  },
+  "group_light_mode": {
+    "description": "群聊轻量模式",
+    "type": "bool",
+    "hint": "群聊只保留普通 bot/群友风格，不注入 owner 私聊记忆。推荐开启。",
+    "default": true
+  },
+  "yushu_group_enabled": {
+    "description": "启用群聊雨舒能力",
+    "type": "bool",
+    "hint": "实验开关。开启后仍不得注入 owner 私聊记忆；MVP 推荐关闭，让群聊只当普通 bot。",
+    "default": false
+  },
+  "owner_user_ids": {
+    "description": "Owner 用户/会话 ID 列表",
+    "type": "list",
+    "items": {
+      "type": "string"
+    },
+    "hint": "只有这些 owner 私聊会话可使用雨舒专属能力。命令和页面不会展示完整 ID。",
+    "default": []
+  },
+  "memory_mode": {
+    "description": "记忆保存模式",
+    "type": "string",
+    "hint": "suggest=建议保存，manual=仅手动保存，off=关闭长期记忆，auto=预留模式不建议开启。推荐 suggest 或 manual。",
+    "default": "suggest",
+    "options": ["off", "manual", "suggest", "auto"]
+  },
+  "memory_enabled": {
+    "description": "启用记忆命令",
+    "type": "bool",
+    "hint": "允许 owner 使用 /ys memory add/edit/delete/export/prune 等命令管理记忆。关闭后拒绝写入类命令。",
+    "default": true
+  },
+  "memory_allow_manual_add": {
+    "description": "允许 owner 手动新增记忆",
+    "type": "bool",
+    "hint": "允许 owner 通过 /ys memory add 新增短摘要记忆。不会自动保存聊天内容。",
+    "default": true
+  },
+  "memory_allow_export": {
+    "description": "允许 owner 导出自己的记忆",
+    "type": "bool",
+    "hint": "允许 owner 将当前 scope 的记忆导出为 Markdown 或 JSONL，便于备份和整理。",
+    "default": true
+  },
+  "memory_allow_group_rule": {
+    "description": "允许群聊保存群规（group_rule）",
+    "type": "bool",
+    "hint": "实验开关。开启后也只允许保存 group_rule，不保存群友个人亲密记忆。推荐关闭。",
+    "default": false
+  },
+  "memory_private_only": {
+    "description": "记忆仅限 owner 私聊",
+    "type": "bool",
+    "hint": "owner 私聊记忆只用于 owner 私聊，不注入群聊。推荐开启。",
+    "default": true
+  },
+  "coach_review_owner_only": {
+    "description": "复盘仅限 owner",
+    "type": "bool",
+    "hint": "只有 owner 私聊可进入复盘模式；群聊只给公开简短建议。推荐开启。",
+    "default": true
+  },
+  "proactive_private_only": {
+    "description": "主动策略仅限 owner 私聊",
+    "type": "bool",
+    "hint": "主动消息策略只允许 owner 私聊使用，不用于群聊。推荐开启。",
+    "default": true
+  },
+  "proactive_enabled": {
+    "description": "启用主动消息策略",
+    "type": "bool",
+    "hint": "只提供雨舒主动消息策略预览；在 reason gate/适配器完成前推荐关闭。",
+    "default": false
+  },
+  "proactive_daily_limit": {
+    "description": "每日主动消息上限",
+    "type": "int",
+    "hint": "主动消息策略允许的每日上限。仅在主动策略启用后生效。",
+    "default": 1
+  },
+  "proactive_pause_hours": {
+    "description": "未回复后的暂停小时数",
+    "type": "int",
+    "hint": "多次未回复后暂停主动消息的时间。仅在主动策略启用后生效。",
+    "default": 24
+  },
+  "max_memory_per_user": {
+    "description": "单用户最大记忆条数",
+    "type": "int",
+    "default": 50
+  },
+  "max_pinned_memory_per_user": {
+    "description": "单用户最大置顶记忆条数",
+    "type": "int",
+    "default": 15
+  },
+  "memory_db_limit_mb": {
+    "description": "记忆数据库大小上限 MB",
+    "type": "int",
+    "hint": "SQLite 只在 owner 明确执行需要持久化的 /ys memory 命令时创建或写入。",
+    "default": 2
+  },
+  "memory_exports_limit_mb": {
+    "description": "记忆导出目录大小上限 MB",
+    "type": "int",
+    "default": 2
+  },
+  "memory_total_limit_mb": {
+    "description": "记忆数据总占用上限 MB",
+    "type": "int",
+    "default": 4
+  },
+  "memory_export_file_limit_kb": {
+    "description": "单次记忆导出文件大小上限 KB",
+    "type": "int",
+    "default": 512
+  },
+  "memory_content_max_chars": {
+    "description": "单条记忆内容最大字符数",
+    "type": "int",
+    "default": 500
+  },
+  "memory_auto_prune_enabled": {
+    "description": "自动清理记忆",
+    "type": "bool",
+    "hint": "自动清理低价值或过期记忆。为避免误删，推荐关闭并使用 /ys memory prune dry-run 先预览。",
+    "default": false
+  },
+  "prompt_injection_enabled": {
+    "description": "启用提示词注入",
+    "type": "bool",
+    "hint": "开启后，owner 私聊真实聊天会注入雨舒上下文。推荐开启。",
+    "default": false
+  },
+  "memory_injection_enabled": {
+    "description": "启用记忆摘要注入",
+    "type": "bool",
+    "hint": "开启后，owner 私聊会注入少量短记忆摘要。不会注入群聊。推荐开启。",
+    "default": false
+  },
+  "state_machine_enabled": {
+    "description": "启用状态机提示",
+    "type": "bool",
+    "hint": "用于调整语气和分寸的实验能力。MVP 推荐关闭。",
+    "default": false
+  },
+  "coach_review_enabled": {
+    "description": "启用复盘模式",
+    "type": "bool",
+    "hint": "owner 私聊命中复盘触发词时进入 coach_review；命中退出词后回到角色内。推荐开启。",
+    "default": true
+  },
+  "coach_review_trigger_keywords": {
+    "description": "复盘触发词",
+    "type": "list",
+    "items": {
+      "type": "string"
+    },
+    "hint": "owner 私聊命中这些词时进入复盘模式；空项会被忽略。",
+    "default": ["复盘", "分析", "哪里不对", "帮我改", "评分", "现实里怎么练"]
+  },
+  "coach_review_exit_keywords": {
+    "description": "复盘退出词",
+    "type": "list",
+    "items": {
+      "type": "string"
+    },
+    "hint": "owner 私聊包含这些词时退出复盘，回到角色内。空项会被忽略。",
+    "default": ["正常聊", "别复盘了", "继续角色内"]
+  },
+  "max_injected_memories": {
+    "description": "单轮最多注入记忆条数",
+    "type": "int",
+    "hint": "控制每次注入到提示词里的短记忆数量，避免上下文过长。",
+    "default": 6
+  },
+  "memory_injection_char_budget": {
+    "description": "记忆注入字符预算",
+    "type": "int",
+    "hint": "控制注入记忆的总字符预算，适合小模型/小上下文时调低。",
+    "default": 900
+  },
+  "include_pinned_memories": {
+    "description": "优先包含置顶记忆",
+    "type": "bool",
+    "hint": "开启后优先注入置顶记忆。推荐开启。",
+    "default": true
+  },
+  "include_open_threads": {
+    "description": "允许注入未完话题",
+    "type": "bool",
+    "hint": "开启后可注入 open_thread 类型记忆，用于接续未完话题。",
+    "default": true
+  },
+  "voicebook_enabled": {
+    "description": "启用 Voicebook 读取",
+    "type": "bool",
+    "hint": "读取雨舒人格与表达规则，用于生成提示片段。推荐开启。",
+    "default": true
+  },
+  "eval_enabled": {
+    "description": "启用评测集读取",
+    "type": "bool",
+    "hint": "只读取并统计 eval cases，不会请求模型。可保持关闭。",
+    "default": false
+  },
+  "debug_mode": {
+    "description": "调试模式",
+    "type": "bool",
+    "hint": "输出更多诊断日志。正式使用建议关闭。",
+    "default": false
+  },
+  "proactive_chat_integration_enabled": {
+    "description": "启用 proactive_chat 集成",
+    "type": "bool",
+    "hint": "适配器预留开关。未完成 reason gate 前建议关闭。",
+    "default": false
+  },
+  "spectrecore_integration_enabled": {
+    "description": "启用 SpectreCore 集成",
+    "type": "bool",
+    "hint": "适配器预留开关。当前不接管 SpectreCore，建议关闭。",
+    "default": false
+  }
+}

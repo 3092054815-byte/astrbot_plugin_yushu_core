@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>雨舒总览</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --border: #dfe3e8;
+      --text: #202124;
+      --muted: #5f6368;
+      --accent: #1a73e8;
+      --error: #b3261e;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      font-weight: 650;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .subtle,
+    .build,
+    .message {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .subtle {
+      margin: 0 0 12px;
+    }
+
+    .build {
+      display: inline-block;
+      margin: 0 0 16px;
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 0 0 12px;
+    }
+
+    .message.error {
+      color: var(--error);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: minmax(130px, 0.9fr) minmax(0, 1.1fr);
+      gap: 8px 12px;
+      font-size: 13px;
+    }
+
+    .kv span,
+    .list-label {
+      color: var(--muted);
+    }
+
+    .kv strong,
+    code {
+      word-break: break-word;
+    }
+
+    .commands {
+      display: grid;
+      gap: 8px;
+    }
+
+    a,
+    button {
+      color: var(--accent);
+    }
+
+    .link-button {
+      display: inline-flex;
+      align-items: center;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid #cfd4dc;
+      border-radius: 6px;
+      background: #fff;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    .command-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .commands-scroll {
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .command-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3px;
+      align-items: start;
+      font-size: 13px;
+    }
+
+    .command-row dd {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .health-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .health-row {
+      display: grid;
+      grid-template-columns: 56px minmax(80px, 0.7fr) minmax(0, 1.3fr);
+      gap: 8px;
+      align-items: start;
+      font-size: 13px;
+    }
+
+    .health-status {
+      font-weight: 650;
+    }
+
+    @media (max-width: 920px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      main {
+        padding: 16px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kv {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>雨舒总览</h1>
+    <p class="subtle">只读总览页，用于查看状态和命令速查。</p>
+    <span class="build">Stage 6B console overview build（只读总览）</span>
+    <p id="message" class="message"></p>
+
+    <section class="grid">
+      <section class="panel">
+        <h2>基础状态</h2>
+        <div id="basic" class="kv"></div>
+      </section>
+
+      <section class="panel">
+        <h2>owner 与作用域</h2>
+        <div id="owner" class="kv"></div>
+      </section>
+
+      <section class="panel">
+        <h2>记忆容量</h2>
+        <div id="memory" class="kv"></div>
+      </section>
+
+      <section class="panel">
+        <h2>健康检查</h2>
+        <div id="health" class="health-list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>复盘触发词</h2>
+        <p class="subtle">这些词可在 AstrBot 插件配置里修改</p>
+        <div id="keywords" class="kv"></div>
+      </section>
+
+      <section class="panel">
+        <h2>命令速查</h2>
+        <div id="commands-scroll" class="commands-scroll">
+          <dl id="commands" class="command-list"></dl>
+        </div>
+        <p id="memory-type-short-help" class="subtle">记忆类型：个人资料、偏好、边界、未完话题、练习目标、关系线索、事实、群规。</p>
+      </section>
+
+      <section class="panel">
+        <h2>安全提示</h2>
+        <div id="safety" class="kv">
+          <span>群聊模式</span><strong>群聊只当普通 bot</strong>
+          <span>记忆隔离</span><strong>群聊不注入 owner 私聊记忆</strong>
+          <span>Owner 群聊</span><strong>owner 在群里发消息也不注入私聊 memory</strong>
+          <span>主动消息</span><strong>proactive 当前未接管或 disabled</strong>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="/api/plugin/page/bridge-sdk.js"></script>
+  <script>
+    const STATUS_ENDPOINT = "console/status";
+    const LABELS = {
+      stage: "阶段",
+      plugin_version: "插件版本",
+      yushu_private_enabled: "私聊雨舒",
+      group_light_mode: "群聊轻量模式",
+      yushu_group_enabled: "群聊雨舒能力",
+      prompt_injection_enabled: "提示词注入",
+      memory_injection_enabled: "记忆注入",
+      coach_review_enabled: "复盘模式",
+      state_machine_enabled: "状态机",
+      proactive_enabled: "主动消息",
+      debug_mode: "调试模式",
+      owner_count: "Owner 数量",
+      current_owner: "当前 Owner",
+      owner_private_enabled: "Owner 私聊启用状态",
+      group_isolation: "群聊隔离状态",
+      memory_count: "记忆条数",
+      pinned_count: "置顶条数",
+      db_size: "数据库大小",
+      exports_size: "导出文件大小",
+      total_size: "总占用",
+      db_limit: "数据库上限",
+      exports_limit: "导出上限",
+      total_limit: "总上限",
+      memory_mode: "记忆模式",
+      runtime_enabled: "记忆运行状态",
+      paused_until: "暂停到",
+      trigger_keywords: "复盘触发词",
+      exit_keywords: "复盘退出词",
+    };
+    const VALUE_LABELS = {
+      true: "已开启",
+      false: "已关闭",
+      none: "无",
+      suggest: "建议保存",
+      manual: "手动保存",
+      off: "已关闭",
+      auto: "自动保存",
+      disabled: "未启用",
+      enabled: "已启用",
+      "owner private enabled": "Owner 私聊已启用",
+    };
+    const HEALTH_STATUS_LABELS = ["通过", "注意", "建议"];
+
+    function text(value) {
+      return value === null || value === undefined ? "" : String(value);
+    }
+
+    function formatValue(value) {
+      if (value === true) {
+        return "已开启";
+      }
+      if (value === false) {
+        return "已关闭";
+      }
+      const raw = text(value);
+      return Object.prototype.hasOwnProperty.call(VALUE_LABELS, raw) ? VALUE_LABELS[raw] : raw;
+    }
+
+    function setMessage(message, isError) {
+      const element = document.getElementById("message");
+      element.textContent = text(message);
+      element.className = isError ? "message error" : "message";
+    }
+
+    function appendKv(container, label, value) {
+      const key = document.createElement("span");
+      key.textContent = label;
+      const val = document.createElement("strong");
+      val.textContent = formatValue(value);
+      container.append(key, val);
+    }
+
+    function renderKv(id, entries) {
+      const container = document.getElementById(id);
+      container.replaceChildren();
+      for (const [label, value] of entries) {
+        appendKv(container, label, value);
+      }
+    }
+
+    function renderHealth(data) {
+      const container = document.getElementById("health");
+      container.replaceChildren();
+      const checks = data.health_checks || [];
+      if (checks.length === 0) {
+        const empty = document.createElement("strong");
+        empty.textContent = "当前没有高优先级风险";
+        container.appendChild(empty);
+        return;
+      }
+      let hasRisk = false;
+      for (const check of checks) {
+        if (check.status !== "通过") {
+          hasRisk = true;
+        }
+        const row = document.createElement("div");
+        row.className = "health-row";
+        const status = document.createElement("span");
+        status.className = "health-status";
+        status.textContent = text(check.status);
+        const item = document.createElement("strong");
+        item.textContent = text(check.item);
+        const message = document.createElement("span");
+        message.textContent = text(check.message);
+        row.append(status, item, message);
+        container.appendChild(row);
+      }
+      if (!hasRisk) {
+        const empty = document.createElement("strong");
+        empty.textContent = "当前没有高优先级风险";
+        container.prepend(empty);
+      }
+    }
+
+    function render(data) {
+      const switches = data.switches || {};
+      const owner = data.owner || {};
+      const memory = data.memory || {};
+      const safety = data.safety || {};
+
+      renderKv("basic", [
+        [LABELS.stage, data.stage],
+        [LABELS.plugin_version, data.plugin_version],
+        [LABELS.yushu_private_enabled, switches.yushu_private_enabled],
+        [LABELS.group_light_mode, switches.group_light_mode],
+        [LABELS.yushu_group_enabled, switches.yushu_group_enabled],
+        [LABELS.prompt_injection_enabled, switches.prompt_injection_enabled],
+        [LABELS.memory_injection_enabled, switches.memory_injection_enabled],
+        [LABELS.coach_review_enabled, switches.coach_review_enabled],
+        [LABELS.state_machine_enabled, switches.state_machine_enabled],
+        [LABELS.proactive_enabled, switches.proactive_enabled],
+        [LABELS.debug_mode, switches.debug_mode],
+      ]);
+      renderKv("owner", [
+        [LABELS.owner_count, owner.owner_count],
+        [LABELS.current_owner, owner.selected_owner_hint],
+        [LABELS.owner_private_enabled, owner.private_scope_enabled],
+        [LABELS.group_isolation, owner.group_isolation],
+      ]);
+      renderKv("memory", [
+        [LABELS.memory_count, memory.memory_count],
+        [LABELS.pinned_count, memory.pinned_count],
+        [LABELS.db_size, memory.db_size],
+        [LABELS.exports_size, memory.exports_size],
+        [LABELS.total_size, memory.total_size],
+        [LABELS.db_limit, memory.db_limit],
+        [LABELS.exports_limit, memory.exports_limit],
+        [LABELS.total_limit, memory.total_limit],
+        [LABELS.memory_mode, memory.memory_mode],
+        [LABELS.runtime_enabled, memory.runtime_enabled],
+        [LABELS.paused_until, memory.paused_until],
+      ]);
+      renderHealth(data);
+      renderKv("keywords", [
+        [LABELS.trigger_keywords, (data.coach_review_trigger_keywords || []).join(", ")],
+        [LABELS.exit_keywords, (data.coach_review_exit_keywords || []).join(", ")],
+      ]);
+      renderKv("safety", [
+        ["群聊模式", safety.group_bot_mode || "群聊只当普通 bot"],
+        ["记忆隔离", safety.group_memory_isolation || "群聊不注入 owner 私聊记忆"],
+        ["Owner 群聊", safety.owner_group_skip || "owner 在群里发消息也不注入私聊 memory"],
+        ["主动消息", safety.proactive_status || "proactive 当前未接管或 disabled"],
+      ]);
+
+      const commands = document.getElementById("commands");
+      commands.replaceChildren();
+      const helpCommands = Array.isArray(data.commands) ? data.commands : [];
+      for (const item of helpCommands) {
+        const command = item.command || "";
+        const description = item.description || "";
+        const row = document.createElement("div");
+        row.className = "command-row";
+        const term = document.createElement("dt");
+        const code = document.createElement("code");
+        code.textContent = command;
+        term.appendChild(code);
+        const desc = document.createElement("dd");
+        desc.textContent = description;
+        row.append(term, desc);
+        commands.appendChild(row);
+      }
+      document.getElementById("memory-type-short-help").textContent =
+        data.memory_type_short_help || "记忆类型：个人资料、偏好、边界、未完话题、练习目标、关系线索、事实、群规。";
+    }
+
+    function pluginPageBridge() {
+      return window.AstrBotPluginPage || null;
+    }
+
+    async function loadStatus() {
+      const bridge = pluginPageBridge();
+      if (!bridge) {
+        throw new Error("请从 AstrBot WebUI 插件页打开");
+      }
+      if (typeof bridge.apiGet !== "function") {
+        throw new Error("Plugin Page bridge 不支持 apiGet");
+      }
+      const data = await bridge.apiGet(STATUS_ENDPOINT, {});
+      render(data);
+      setMessage("", false);
+    }
+
+    if (!pluginPageBridge()) {
+      setMessage("请从 AstrBot WebUI 插件页打开", true);
+    } else {
+      window.AstrBotPluginPage.ready()
+      .then(loadStatus)
+      .catch((error) => setMessage(error?.message || "load_failed", true));
+    }
+  </script>
+</body>
+</html>
