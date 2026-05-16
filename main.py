@@ -16,6 +16,11 @@ from astrbot.api.event import AstrMessageEvent, filter
 from astrbot.api.provider import ProviderRequest
 from astrbot.core.star.filter.command import GreedyStr
 
+from .core.coach_history import (
+    mark_final_assistant_message_no_save,
+    mark_live_mode_history_flags,
+    should_mark_coach_response_no_history,
+)
 from .core.console_overview import build_console_overview_status
 from .core.command_format import (
     config_audit_report,
@@ -560,8 +565,30 @@ class YushuCorePlugin(Star):
                 type(exc).__name__,
             )
             return
+        if applied:
+            mark_live_mode_history_flags(event, result.mode, self.config)
         if applied and debug_mode:
             logger.info(format_applied_log_summary(result))
+
+    @filter.on_agent_done()
+    async def yushu_coach_review_no_history(
+        self,
+        event: AstrMessageEvent,
+        run_context: Any,
+        response: Any,
+    ):
+        """Mark coach_review assistant replies as temporary before history save."""
+
+        if not should_mark_coach_response_no_history(self.config, event):
+            return
+        marked = mark_final_assistant_message_no_save(
+            getattr(run_context, "messages", None)
+        )
+        if _get_bool(self.config, "debug_mode", False):
+            logger.info(
+                "yushu_coach_review_no_history marked=%s",
+                "true" if marked else "false",
+            )
 
     @filter.command_group("ys")
     def ys(self):
@@ -1045,6 +1072,7 @@ class YushuCorePlugin(Star):
             f"记忆注入：{_cn_value(_get_bool(self.config, 'memory_injection_enabled', False))}",
             f"状态机：{_cn_value(_get_bool(self.config, 'state_machine_enabled', False))}",
             f"复盘模式：{_cn_value(_get_bool(self.config, 'coach_review_enabled', True))}",
+            f"复盘不进历史：{_cn_value(_get_bool(self.config, 'coach_review_no_history_enabled', True))}",
             f"复盘触发词数量：{len(trigger_keywords)}",
             f"复盘触发词：{summarize_keywords(trigger_keywords)}",
             f"复盘退出词数量：{len(exit_keywords)}",

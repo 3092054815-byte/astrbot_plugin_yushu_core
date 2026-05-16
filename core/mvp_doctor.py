@@ -98,6 +98,7 @@ def build_doctor_report(
             f"- 提示词注入：{enabled_label(data.get('prompt_injection_enabled', False))}",
             f"- 记忆注入：{enabled_label(data.get('memory_injection_enabled', False))}",
             f"- 复盘模式：{enabled_label(data.get('coach_review_enabled', False))}",
+            f"- 复盘不进历史：{enabled_label(data.get('coach_review_no_history_enabled', True))}",
             f"- 状态机：{enabled_label(data.get('state_machine_enabled', False))}",
             "",
             "群聊隔离：通过，群聊不注入 owner 私聊记忆",

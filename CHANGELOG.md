@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.1 - 2026-05-16
+
+### Added
+
+- 新增 `coach_review_no_history_enabled` 配置，默认开启。
+- 复盘模式注入成功后记录 live mode 标记，并在 `on_agent_done` 阶段将本轮复盘 assistant 回复标记为临时消息。
+- `/ys injection status`、`/ys doctor`、配置审计和配置差异中展示“复盘不进历史”状态。
+- 复盘提示词明确说明复盘内容只作为当轮建议，不作为长期事实、偏好或关系状态。
+
+### Fixed
+
+- 修正候选包中 MVP 验证文档测试写死旧绝对路径的问题，继续使用仓库内 `docs/mvp_validation_checklist.md`。
+
 ## v0.1.0 - 2026-05-16
 
 MVP release.

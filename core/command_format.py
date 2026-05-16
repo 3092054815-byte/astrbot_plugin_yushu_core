@@ -211,6 +211,7 @@ RECOMMENDED_CONFIG: dict[str, Any] = {
     "prompt_injection_enabled": True,
     "memory_injection_enabled": True,
     "coach_review_enabled": True,
+    "coach_review_no_history_enabled": True,
     "state_machine_enabled": False,
     "proactive_enabled": False,
     "debug_mode": False,
@@ -229,6 +230,7 @@ CONFIG_LABELS = {
     "prompt_injection_enabled": "提示词注入",
     "memory_injection_enabled": "记忆注入",
     "coach_review_enabled": "复盘模式",
+    "coach_review_no_history_enabled": "复盘不进历史",
     "state_machine_enabled": "状态机",
     "proactive_enabled": "主动消息",
     "debug_mode": "调试模式",
@@ -243,6 +245,7 @@ CONFIG_LABELS = {
 CONFIG_REASONS = {
     "prompt_injection_enabled": "不开启时真实聊天不会注入雨舒上下文。",
     "memory_injection_enabled": "不开启时记忆不会进入真实聊天。",
+    "coach_review_no_history_enabled": "开启后复盘回复不会影响后续角色内聊天。",
     "debug_mode": "正式使用前减少日志。",
     "proactive_enabled": "reason gate 尚未接管前不建议主动发。",
     "yushu_group_enabled": "群聊只作为普通 bot，避免进入私聊陪练能力。",

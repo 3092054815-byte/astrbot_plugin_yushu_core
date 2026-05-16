@@ -534,6 +534,7 @@ class Stage5BDryRunTest(unittest.TestCase):
             self.assertTrue(applied)
             self.assertTrue(request.system_prompt.startswith("base system\n\n"))
             self.assertIn("[YUSHU_COACH_REVIEW_CONTEXT]", request.system_prompt)
+            self.assertIn("复盘内容只作为当轮建议", request.system_prompt)
             self.assertEqual(request.prompt, "base prompt")
 
     def test_custom_coach_review_trigger_keyword_enters_coach_mode(self) -> None:
@@ -614,6 +615,8 @@ class Stage5BDryRunTest(unittest.TestCase):
     def test_conf_schema_has_keyword_fields_and_valid_json(self) -> None:
         schema = json.loads(Path("_conf_schema.json").read_text(encoding="utf-8"))
 
+        self.assertEqual(schema["coach_review_no_history_enabled"]["type"], "bool")
+        self.assertIs(schema["coach_review_no_history_enabled"]["default"], True)
         self.assertEqual(
             schema["coach_review_trigger_keywords"]["default"],
             ["复盘", "分析", "哪里不对", "帮我改", "评分", "现实里怎么练"],
@@ -655,6 +658,7 @@ class Stage5BDryRunTest(unittest.TestCase):
             "memory_injection_enabled": ("bool", False),
             "state_machine_enabled": ("bool", False),
             "coach_review_enabled": ("bool", True),
+            "coach_review_no_history_enabled": ("bool", True),
             "coach_review_trigger_keywords": (
                 "list",
                 ["复盘", "分析", "哪里不对", "帮我改", "评分", "现实里怎么练"],
@@ -684,6 +688,7 @@ class Stage5BDryRunTest(unittest.TestCase):
             "prompt_injection_enabled",
             "memory_injection_enabled",
             "coach_review_enabled",
+            "coach_review_no_history_enabled",
             "debug_mode",
         ]:
             item_text = json.dumps(schema[key], ensure_ascii=False)

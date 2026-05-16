@@ -1,4 +1,4 @@
-# yushu_core MVP v0.1.0 验证清单
+# yushu_core MVP v0.1.1 验证清单
 
 本文档用于发布前和部署后的人工验收。
 
@@ -8,6 +8,7 @@
 prompt_injection_enabled=true
 memory_injection_enabled=true
 coach_review_enabled=true
+coach_review_no_history_enabled=true
 debug_mode=false
 state_machine_enabled=false
 proactive_enabled=false
@@ -52,6 +53,7 @@ python3 -m json.tool _conf_schema.json >/tmp/yushu_release_schema_check.json
 /ys config diff
 /ys memory add 偏好 喜欢简短直接的回复
 /ys memory list
+/ys injection status
 /ys injection preview normal
 /ys injection preview coach
 ```
@@ -62,7 +64,9 @@ python3 -m json.tool _conf_schema.json >/tmp/yushu_release_schema_check.json
 - `/ys help` 显示中文命令帮助。
 - `/ys memory add 偏好 ...` 可写入，内部 type 为 `preference`。
 - `/ys memory list` 显示中文字段和中文类型。
+- `/ys injection status` 显示“复盘不进历史：已开启”。
 - 注入预览只显示短记忆摘要，不显示数据库细节。
+- owner 私聊触发复盘后，本轮复盘 assistant 回复不应进入后续角色内聊天上下文。
 
 ## 群聊隔离验证步骤
 

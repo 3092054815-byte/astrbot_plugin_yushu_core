@@ -1,7 +1,7 @@
 name: yushu_core
 desc: 雨舒关系型沟通陪练系统的最小骨架插件
 help: 提供 owner 私聊雨舒上下文注入、手动记忆管理、复盘模式、WebUI 总览和记忆管理页面。
-version: v0.1.0
+version: v0.1.1
 author: local
 repo: "https://github.com/3092054815-byte/astrbot_plugin_yushu_core"
 display_name: 雨舒 Core
