@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>记忆管理</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --border: #dfe3e8;
+      --text: #202124;
+      --muted: #5f6368;
+      --accent: #1a73e8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 4px;
+      font-size: 24px;
+      font-weight: 650;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+    }
+
+    .subtle {
+      margin: 0 0 20px;
+      color: var(--muted);
+    }
+
+    .owner-hint {
+      margin: -8px 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .build {
+      display: inline-block;
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .message {
+      min-height: 22px;
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .message.error {
+      color: #b3261e;
+      text-align: left;
+      padding: 0;
+    }
+
+    .confirm-panel,
+    .edit-panel,
+    .tool-panel {
+      margin: 0 0 16px;
+      border: 1px solid #f0b8b2;
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .confirm-panel {
+      background: #fff8f7;
+    }
+
+    .edit-panel {
+      background: #f8fbff;
+      border-color: #b8d3f0;
+    }
+
+    .tool-panel {
+      background: var(--panel);
+      border-color: var(--border);
+    }
+
+    .confirm-panel[hidden],
+    .edit-panel[hidden],
+    .tool-panel[hidden] {
+      display: none;
+    }
+
+    .confirm-panel strong,
+    .edit-panel strong,
+    .tool-panel strong {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .confirm-panel pre,
+    .edit-panel pre,
+    .tool-panel pre {
+      margin: 0 0 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .edit-panel textarea {
+      width: 100%;
+      min-height: 88px;
+      border: 1px solid #cfd4dc;
+      border-radius: 6px;
+      padding: 8px;
+      resize: vertical;
+      font: inherit;
+    }
+
+    .confirm-actions,
+    .row-actions,
+    .tool-actions,
+    .type-help {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .type-help {
+      margin-bottom: 16px;
+    }
+
+    .type-help-item {
+      border: 1px solid #edf0f2;
+      border-radius: 6px;
+      padding: 8px;
+      min-width: 210px;
+      flex: 1 1 240px;
+      font-size: 13px;
+    }
+
+    .type-help-item span {
+      display: block;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .stat,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .stat span,
+    .detail-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 18px;
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    select,
+    button {
+      height: 34px;
+      border: 1px solid #cfd4dc;
+      border-radius: 6px;
+      background: #fff;
+      padding: 0 10px;
+    }
+
+    button {
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.8fr);
+      gap: 16px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #edf0f2;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      background: #f0f3f6;
+      color: #3c4043;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .detail-row {
+      border-bottom: 1px solid #edf0f2;
+      padding: 8px 0;
+    }
+
+    .detail-row strong {
+      display: block;
+      margin-top: 4px;
+      word-break: break-word;
+    }
+
+    .empty,
+    .error {
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+    }
+
+    .error {
+      color: #b3261e;
+    }
+
+    @media (max-width: 860px) {
+      main {
+        padding: 16px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main data-mode="single-item-actions">
+    <h1>记忆管理</h1>
+    <p class="subtle">单条操作和当前 Owner/范围导出清理；不提供新增、全清或批量编辑入口。</p>
+    <span class="build">Stage 6A-4 export prune build（单条操作和当前 Owner/范围导出清理）</span>
+
+    <section id="status" class="stats"></section>
+    <p id="ownerHint" class="owner-hint"></p>
+    <p id="message" class="message"></p>
+    <section id="deleteConfirm" class="confirm-panel" hidden>
+      <strong>确认删除这条记忆？</strong>
+      <pre id="deleteConfirmText"></pre>
+      <div class="confirm-actions">
+        <button id="deleteConfirmYes" type="button">确认删除</button>
+        <button id="deleteConfirmNo" type="button">取消</button>
+      </div>
+    </section>
+    <section id="editPanel" class="edit-panel" hidden>
+      <strong>编辑确认</strong>
+      <pre id="editConfirmText"></pre>
+      <label>类型<select id="editType"></select></label>
+      <label>内容<textarea id="editContent" maxlength="500"></textarea></label>
+      <div class="confirm-actions">
+        <button id="editSave" type="button">保存</button>
+        <button id="editCancel" type="button">取消</button>
+      </div>
+    </section>
+    <section class="tool-panel">
+      <strong>导出与清理</strong>
+      <div class="tool-actions">
+        <button id="exportMd" type="button" data-action="export-md">导出 Markdown</button>
+        <button id="exportJsonl" type="button" data-action="export-jsonl">导出 JSONL</button>
+        <button id="pruneDryRun" type="button" data-action="prune-dry-run">清理预览</button>
+      </div>
+      <pre id="toolResult">等待操作</pre>
+    </section>
+    <section id="pruneConfirmPanel" class="confirm-panel" hidden>
+      <strong>确认清理？</strong>
+      <pre id="pruneConfirmText"></pre>
+      <div class="confirm-actions">
+        <button id="pruneConfirm" type="button" data-action="prune-confirm">确认清理</button>
+        <button id="pruneCancel" type="button">取消</button>
+      </div>
+    </section>
+
+    <section class="tool-panel">
+      <strong>类型说明</strong>
+      <div id="typeHelp" class="type-help"></div>
+    </section>
+
+    <section class="filters">
+      <label>当前 Owner<select id="owner"></select></label>
+      <label>范围<select id="scope"></select></label>
+      <label>类型<select id="type"></select></label>
+      <label>置顶状态<select id="pinned"></select></label>
+      <button id="apply" type="button">应用</button>
+    </section>
+
+    <section class="layout">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>id</th>
+              <th>类型</th>
+              <th>置顶状态</th>
+              <th>创建时间</th>
+              <th>更新时间</th>
+              <th>过期时间</th>
+              <th>内容摘要</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="items">
+            <tr><td colspan="8" class="empty">加载中</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <aside class="panel">
+        <h2>详情</h2>
+        <div id="detail" class="detail-row"><span>详情</span><strong>请选择一条记忆</strong></div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/api/plugin/page/bridge-sdk.js"></script>
+  <script>
+    const ENDPOINT = "memory-console";
+    const DELETE_ENDPOINT = "memory-console/delete";
+    const EDIT_ENDPOINT = "memory-console/edit";
+    const PIN_ENDPOINT = "memory-console/pin";
+    const UNPIN_ENDPOINT = "memory-console/unpin";
+    const ACTION_ENDPOINT = "memory-console/action";
+    const EXPORT_HOST_DIR = "/root/astrbot/data/plugin_data/astrbot_plugin_yushu_core/exports/";
+    const EXPORT_CONTAINER_DIR = "/AstrBot/data/plugin_data/astrbot_plugin_yushu_core/exports/";
+    const statNames = [
+      "db_size",
+      "exports_size",
+      "total_size",
+      "memory_count",
+      "pinned_count",
+      "db_limit",
+      "exports_limit",
+      "total_limit",
+    ];
+    const detailNames = [
+      "id",
+      "scope",
+      "type",
+      "content",
+      "confidence",
+      "created_at",
+      "updated_at",
+      "expires_at",
+      "source",
+      "pinned",
+    ];
+    const statLabels = {
+      db_size: "数据库大小",
+      exports_size: "导出文件大小",
+      total_size: "总占用",
+      memory_count: "记忆条数",
+      pinned_count: "置顶条数",
+      db_limit: "数据库上限",
+      exports_limit: "导出上限",
+      total_limit: "总上限",
+    };
+    const detailLabels = {
+      id: "id",
+      scope: "范围",
+      type: "类型",
+      content: "内容",
+      confidence: "置信度",
+      created_at: "创建时间",
+      updated_at: "更新时间",
+      expires_at: "过期时间",
+      source: "来源",
+      pinned: "置顶状态",
+    };
+    const valueLabels = {
+      true: "已开启",
+      false: "已关闭",
+      none: "无",
+      suggest: "建议保存",
+      manual: "手动保存",
+      off: "已关闭",
+      auto: "自动保存",
+      disabled: "未启用",
+      enabled: "已启用",
+    };
+    const typeLabels = {
+      profile: "个人资料",
+      preference: "偏好",
+      boundary: "边界",
+      open_thread: "未完话题",
+      skill_goal: "练习目标",
+      relationship: "关系线索",
+      fact: "事实",
+      group_rule: "群规",
+    };
+    const typeDescriptions = {
+      profile: "稳定身份/背景摘要。",
+      preference: "你喜欢的回复风格或互动偏好。",
+      boundary: "不希望被怎样对待，或需要避开的表达。",
+      open_thread: "下次可接上的开放话题。",
+      skill_goal: "沟通表达、边界、邀约、降焦虑等训练目标。",
+      relationship: "现实关系中的阶段、氛围、注意点。",
+      fact: "普通事实信息，避免敏感隐私。",
+      group_rule: "群聊层面的公开规则，不用于 owner 私聊亲密记忆。",
+    };
+    let snapshot = null;
+    let pendingDelete = null;
+    let pendingDeleteButton = null;
+    let pendingEdit = null;
+    let pendingEditButton = null;
+    let pendingPrunePlan = null;
+    let lastPrunePlan = null;
+
+    function text(value) {
+      return value === null || value === undefined ? "" : String(value);
+    }
+
+    function formatValue(value) {
+      if (value === true) {
+        return "已开启";
+      }
+      if (value === false) {
+        return "已关闭";
+      }
+      if (Number(value) === 1 && String(value) === "1") {
+        return "已置顶";
+      }
+      if (Number(value) === 0 && String(value) === "0") {
+        return "未置顶";
+      }
+      const raw = text(value);
+      return Object.prototype.hasOwnProperty.call(valueLabels, raw) ? valueLabels[raw] : raw;
+    }
+
+    function formatType(type, includeRaw = true) {
+      const raw = text(type);
+      const label = typeLabels[raw];
+      if (!label) {
+        return raw;
+      }
+      return includeRaw ? label + "（" + raw + "）" : label;
+    }
+
+    function setMessage(message, isError) {
+      const element = document.getElementById("message");
+      element.textContent = text(message);
+      element.className = isError ? "message error" : "message";
+    }
+
+    function setToolResult(lines) {
+      const element = document.getElementById("toolResult");
+      element.textContent = Array.isArray(lines) ? lines.join("\n") : text(lines);
+    }
+
+    function unwrapBridgeResponse(response) {
+      return response && response.data && typeof response.data === "object"
+        ? response.data
+        : (response || {});
+    }
+
+    function pluginPageBridge() {
+      return window.AstrBotPluginPage || null;
+    }
+
+    function ensureBridge() {
+      const bridge = pluginPageBridge();
+      if (!bridge) {
+        throw new Error("Plugin Page bridge 未加载，请从 AstrBot WebUI 插件页打开。");
+      }
+      if (typeof bridge.apiGet !== "function") {
+        throw new Error("Plugin Page bridge 不支持 apiGet。");
+      }
+      return bridge;
+    }
+
+    function ensurePostBridge() {
+      const bridge = ensureBridge();
+      if (typeof window.AstrBotPluginPage.apiPost !== "function") {
+        throw new Error("Plugin Page bridge 不支持 apiPost。");
+      }
+      return bridge;
+    }
+
+    function option(value, label, selected) {
+      const element = document.createElement("option");
+      element.value = value;
+      element.textContent = label;
+      if (selected) {
+        element.selected = true;
+      }
+      return element;
+    }
+
+    function fillSelect(id, options, selected) {
+      const select = document.getElementById(id);
+      select.replaceChildren();
+      for (const item of options) {
+        select.appendChild(option(item.value, item.label, item.value === selected));
+      }
+    }
+
+    function fillEditTypeSelect(data, selected) {
+      const types = data.allowed_types || [];
+      fillSelect(
+        "editType",
+        types.map((type) => ({ value: type, label: formatType(type) })),
+        selected || types[0] || "",
+      );
+    }
+
+    function renderTypeHelp(data) {
+      const container = document.getElementById("typeHelp");
+      container.replaceChildren();
+      const items = data.type_help || Object.keys(typeLabels).map((type) => ({
+        type,
+        display: formatType(type),
+        description: typeDescriptions[type],
+      }));
+      for (const item of items) {
+        const card = document.createElement("div");
+        card.className = "type-help-item";
+        const title = document.createElement("strong");
+        title.textContent = item.display || formatType(item.type);
+        const desc = document.createElement("span");
+        desc.textContent = item.description || "";
+        card.append(title, desc);
+        container.appendChild(card);
+      }
+    }
+
+    function renderStatus(data) {
+      const status = document.getElementById("status");
+      status.replaceChildren();
+      for (const name of statNames) {
+        const card = document.createElement("div");
+        card.className = "stat";
+        const label = document.createElement("span");
+        label.textContent = statLabels[name] || name;
+        const value = document.createElement("strong");
+        value.textContent = formatValue(data.status?.[name]);
+        card.append(label, value);
+        status.appendChild(card);
+      }
+    }
+
+    function renderFilters(data) {
+      const ownerDetails = data.owner_details || [];
+      fillSelect(
+        "owner",
+        ownerDetails.length > 0
+          ? ownerDetails.map((owner) => ({
+              value: owner.key,
+              label: owner.label || owner.key,
+            }))
+          : (data.owner_options || ["owner_none"]).map((owner) => ({
+              value: owner,
+              label: owner,
+            })),
+        data.selected_owner || "owner_none",
+      );
+      fillSelect(
+        "scope",
+        (data.scope_options || [{ key: "private", label: "private" }]).map((scope) => ({
+          value: scope.key,
+          label: scope.label,
+        })),
+        data.selected_scope || "private",
+      );
+      fillSelect(
+        "type",
+        [{ value: "", label: "全部" }].concat((data.allowed_types || []).map((type) => ({
+          value: type,
+          label: formatType(type),
+        }))),
+        data.selected_type || "",
+      );
+      fillSelect(
+        "pinned",
+        [
+          { value: "", label: "全部" },
+          { value: "true", label: "已置顶" },
+          { value: "false", label: "未置顶" },
+        ],
+        data.selected_pinned || "",
+      );
+      document.getElementById("ownerHint").textContent = text(data.selected_owner_hint);
+    }
+
+    function renderItems(data) {
+      const body = document.getElementById("items");
+      body.replaceChildren();
+      if (!data.items || data.items.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 8;
+        cell.className = "empty";
+        cell.textContent = "暂无记忆";
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+      }
+
+      for (const item of data.items) {
+        const row = document.createElement("tr");
+        const idCell = document.createElement("td");
+        const link = document.createElement("a");
+        link.href = "#";
+        link.textContent = text(item.id);
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          loadSnapshot({ memory_id: text(item.id) });
+        });
+        idCell.appendChild(link);
+        row.appendChild(idCell);
+
+        for (const key of ["type", "pinned", "created_at", "updated_at", "expires_at", "short_content"]) {
+          const cell = document.createElement("td");
+          cell.textContent = key === "pinned"
+            ? formatValue(item[key])
+            : key === "type"
+              ? text(item.type_label || formatType(item[key]))
+              : text(item[key]);
+          row.appendChild(cell);
+        }
+
+        const actionCell = document.createElement("td");
+        const actions = document.createElement("div");
+        actions.className = "row-actions";
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.textContent = "编辑";
+        editButton.setAttribute("data-action", "edit-memory");
+        editButton.setAttribute("data-memory-id", text(item.id));
+        editButton.setAttribute("data-memory-type", text(item.type));
+        editButton.setAttribute("data-memory-content", text(item.short_content));
+        actions.appendChild(editButton);
+
+        const pinButton = document.createElement("button");
+        pinButton.type = "button";
+        const pinned = Number(item.pinned || 0) === 1;
+        pinButton.textContent = pinned ? "取消置顶" : "置顶";
+        pinButton.setAttribute("data-action", pinned ? "unpin-memory" : "pin-memory");
+        pinButton.setAttribute("data-memory-id", text(item.id));
+        pinButton.setAttribute("data-memory-type", text(item.type));
+        pinButton.setAttribute("data-memory-content", text(item.short_content));
+        actions.appendChild(pinButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.textContent = "删除";
+        deleteButton.setAttribute("data-action", "delete-memory");
+        deleteButton.setAttribute("data-memory-id", text(item.id));
+        deleteButton.setAttribute("data-memory-type", text(item.type));
+        deleteButton.setAttribute("data-memory-content", text(item.short_content));
+        actions.appendChild(deleteButton);
+        actionCell.appendChild(actions);
+        row.appendChild(actionCell);
+        body.appendChild(row);
+      }
+    }
+
+    function renderDetail(data) {
+      const detail = document.getElementById("detail");
+      detail.replaceChildren();
+      if (data.detail_error) {
+        detail.className = "detail-row error";
+        const label = document.createElement("span");
+        label.textContent = "详情";
+        const value = document.createElement("strong");
+        value.textContent = data.detail_error;
+        detail.append(label, value);
+        return;
+      }
+      detail.className = "detail-row";
+      if (!data.detail) {
+        const label = document.createElement("span");
+        label.textContent = "详情";
+        const value = document.createElement("strong");
+        value.textContent = "请选择一条记忆";
+        detail.append(label, value);
+        return;
+      }
+      for (const key of detailNames) {
+        const row = document.createElement("div");
+        row.className = "detail-row";
+        const label = document.createElement("span");
+        label.textContent = detailLabels[key] || key;
+        const value = document.createElement("strong");
+        value.textContent = key === "pinned"
+          ? formatValue(data.detail[key])
+          : key === "type"
+            ? text(data.detail.type_label || formatType(data.detail[key]))
+            : text(data.detail[key]);
+        row.append(label, value);
+        detail.appendChild(row);
+      }
+    }
+
+    function render(data) {
+      clearPrunePlan();
+      snapshot = data;
+      renderStatus(data);
+      renderTypeHelp(data);
+      renderFilters(data);
+      fillEditTypeSelect(data, "");
+      renderItems(data);
+      renderDetail(data);
+    }
+
+    function currentParams(extra) {
+      return Object.assign(
+        {
+          owner: document.getElementById("owner").value,
+          scope: document.getElementById("scope").value,
+          type: document.getElementById("type").value,
+          pinned: document.getElementById("pinned").value,
+        },
+        extra || {},
+      );
+    }
+
+    function currentOwnerKey() {
+      return document.getElementById("owner").value;
+    }
+
+    function currentScopeKey() {
+      return document.getElementById("scope").value;
+    }
+
+    async function loadSnapshot(extra) {
+      const params = snapshot ? currentParams(extra) : extra || {};
+      const data = await ensureBridge().apiGet(ENDPOINT, params);
+      render(data);
+      setMessage("", false);
+    }
+
+    function openDeleteConfirm(item, button) {
+      const panel = document.getElementById("deleteConfirm");
+      const content = document.getElementById("deleteConfirmText");
+      pendingDelete = item;
+      pendingDeleteButton = button;
+      content.textContent = [
+        "确认删除这条记忆？",
+        "id: " + text(item.id),
+        "type: " + text(item.type),
+        "short_content: " + text(item.short_content),
+      ].join("\n");
+      panel.hidden = false;
+      setMessage("", false);
+    }
+
+    function closeDeleteConfirm() {
+      pendingDelete = null;
+      pendingDeleteButton = null;
+      document.getElementById("deleteConfirm").hidden = true;
+      const activeButton = document.querySelector("[data-action='delete-memory'][data-loading='true']");
+      if (activeButton) {
+        activeButton.textContent = "删除";
+        activeButton.disabled = false;
+        delete activeButton.dataset.loading;
+      }
+    }
+
+    function closeEditPanel() {
+      pendingEdit = null;
+      pendingEditButton = null;
+      document.getElementById("editPanel").hidden = true;
+      document.getElementById("editConfirmText").textContent = "";
+      document.getElementById("editContent").value = "";
+      const saveButton = document.getElementById("editSave");
+      saveButton.disabled = false;
+      saveButton.textContent = "保存";
+      const activeButton = document.querySelector("[data-action='edit-memory'][data-loading='true']");
+      if (activeButton) {
+        activeButton.textContent = "编辑";
+        activeButton.disabled = false;
+        delete activeButton.dataset.loading;
+      }
+    }
+
+    function closePruneConfirm() {
+      pendingPrunePlan = null;
+      document.getElementById("pruneConfirmPanel").hidden = true;
+      document.getElementById("pruneConfirmText").textContent = "";
+      const button = document.getElementById("pruneConfirm");
+      button.disabled = false;
+      button.textContent = "确认清理";
+    }
+
+    function clearPrunePlan() {
+      lastPrunePlan = null;
+      closePruneConfirm();
+    }
+
+    function itemFromButton(button) {
+      return {
+        id: button.dataset.memoryId || "",
+        type: button.dataset.memoryType || "",
+        short_content: button.dataset.memoryContent || "",
+      };
+    }
+
+    function openEditPanel(item, button) {
+      closeDeleteConfirm();
+      pendingEdit = item;
+      pendingEditButton = button;
+      fillEditTypeSelect(snapshot || {}, text(item.type));
+      document.getElementById("editContent").value = text(item.short_content);
+      document.getElementById("editConfirmText").textContent = [
+        "保存前请确认这条记忆的编辑内容。",
+        "id: " + text(item.id),
+        "type: " + text(item.type),
+        "content: " + text(item.short_content),
+      ].join("\n");
+      document.getElementById("editPanel").hidden = false;
+      setMessage("", false);
+    }
+
+    function selectedOwnerScopePayload(memoryId) {
+      const payload = {
+        owner: currentOwnerKey(),
+        scope: currentScopeKey(),
+      };
+      if (memoryId !== undefined) {
+        payload.memory_id = text(memoryId);
+      }
+      return payload;
+    }
+
+    function checkedResponse(response, fallbackMessage) {
+      if (response && response.status === "error") {
+        throw new Error(response.message || fallbackMessage);
+      }
+      return response;
+    }
+
+    async function deleteMemory(item, button) {
+      button.disabled = true;
+      button.textContent = "删除中...";
+      button.dataset.loading = "true";
+      checkedResponse(await ensurePostBridge().apiPost(DELETE_ENDPOINT, {
+        ...selectedOwnerScopePayload(item.id),
+        confirm: true,
+      }), "delete_failed");
+      await loadSnapshot({ memory_id: "" });
+      setMessage("删除成功", false);
+      closeDeleteConfirm();
+    }
+
+    async function saveEdit() {
+      if (!pendingEdit) {
+        closeEditPanel();
+        return;
+      }
+      const button = document.getElementById("editSave");
+      button.disabled = true;
+      button.textContent = "保存中...";
+      if (pendingEditButton) {
+        pendingEditButton.disabled = true;
+        pendingEditButton.textContent = "保存中...";
+        pendingEditButton.dataset.loading = "true";
+      }
+      checkedResponse(await ensurePostBridge().apiPost(EDIT_ENDPOINT, {
+        ...selectedOwnerScopePayload(pendingEdit.id),
+        type: document.getElementById("editType").value,
+        content: document.getElementById("editContent").value,
+        confirm: true,
+      }), "edit_failed");
+      await loadSnapshot({ memory_id: text(pendingEdit.id) });
+      setMessage("保存成功", false);
+      button.disabled = false;
+      button.textContent = "保存";
+      closeEditPanel();
+    }
+
+    async function setPinned(item, button, pinned) {
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "处理中...";
+      try {
+        const endpoint = pinned ? PIN_ENDPOINT : UNPIN_ENDPOINT;
+        checkedResponse(await ensurePostBridge().apiPost(endpoint, selectedOwnerScopePayload(item.id)), "pin_failed");
+        await loadSnapshot({ memory_id: "" });
+        setMessage(pinned ? "置顶成功" : "取消置顶成功", false);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    async function exportMemory(format, button) {
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "导出中...";
+      try {
+        const response = checkedResponse(await ensurePostBridge().apiPost(ACTION_ENDPOINT, {
+          ...selectedOwnerScopePayload(),
+          action: "export",
+          format,
+        }), "export_failed");
+        const data = unwrapBridgeResponse(response);
+        setToolResult([
+          "format: " + text(data.format),
+          "exported_count: " + text(data.exported_count),
+          "skipped_sensitive_count: " + text(data.skipped_sensitive_count),
+          "size: " + text(data.size),
+          "相对路径: " + text(data.relative_path),
+          "保存位置: " + EXPORT_HOST_DIR,
+          "服务器宿主机路径见上方，容器内对应 " + EXPORT_CONTAINER_DIR,
+        ]);
+        setMessage("导出完成", false);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    async function pruneDryRun(button) {
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "预览中...";
+      try {
+        const response = checkedResponse(await ensurePostBridge().apiPost(ACTION_ENDPOINT, {
+          ...selectedOwnerScopePayload(),
+          action: "prune_dry_run",
+        }), "prune_failed");
+        const data = unwrapBridgeResponse(response);
+        const plannedMemories = Number(data.planned_memories || 0);
+        const plannedExportFiles = Number(data.planned_export_files || 0);
+        const plannedBytes = Number(data.planned_bytes || 0);
+        pendingPrunePlan = data;
+        lastPrunePlan = {
+          token: data.plan_token,
+          ownerKey: currentOwnerKey(),
+          scope: currentScopeKey(),
+          plannedBytes,
+          plannedMemories,
+          plannedExportFiles,
+        };
+        const resultLines = [
+          "planned_memories: " + text(data.planned_memories),
+          "planned_export_files: " + text(data.planned_export_files),
+          "planned_bytes: " + text(data.planned_size || data.planned_bytes),
+          "deleted_memories: " + text(data.deleted_memories),
+          "deleted_export_files: " + text(data.deleted_export_files),
+          "plan: ready",
+        ];
+        if (plannedMemories === 0 && plannedExportFiles === 0 && plannedBytes === 0) {
+          resultLines.push("没有需要清理的项目");
+          document.getElementById("pruneConfirmPanel").hidden = true;
+          const confirmButton = document.getElementById("pruneConfirm");
+          confirmButton.disabled = true;
+          setToolResult(resultLines);
+          setMessage("清理预览完成，没有需要清理的项目", false);
+          return;
+        }
+        setToolResult(resultLines);
+        document.getElementById("pruneConfirmText").textContent = [
+          "请确认执行最近一次清理预览计划。",
+          "planned_memories: " + text(data.planned_memories),
+          "planned_export_files: " + text(data.planned_export_files),
+          "planned_bytes: " + text(data.planned_size || data.planned_bytes),
+        ].join("\n");
+        document.getElementById("pruneConfirmPanel").hidden = false;
+        document.getElementById("pruneConfirm").disabled = false;
+        setMessage("清理预览完成", false);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    async function pruneConfirm() {
+      if (!lastPrunePlan || !lastPrunePlan.token) {
+        setMessage("请先重新清理预览", true);
+        return;
+      }
+      if (lastPrunePlan.ownerKey !== currentOwnerKey() || lastPrunePlan.scope !== currentScopeKey()) {
+        clearPrunePlan();
+        setMessage("请先重新清理预览", true);
+        return;
+      }
+      const button = document.getElementById("pruneConfirm");
+      button.disabled = true;
+      button.textContent = "清理中...";
+      const response = checkedResponse(await ensurePostBridge().apiPost(ACTION_ENDPOINT, {
+        ...selectedOwnerScopePayload(),
+        action: "prune_confirm",
+        plan_token: lastPrunePlan.token,
+      }), "prune_failed");
+      const data = unwrapBridgeResponse(response);
+      setToolResult([
+        "planned_memories: " + text(data.planned_memories),
+        "planned_export_files: " + text(data.planned_export_files),
+        "planned_bytes: " + text(data.planned_size || data.planned_bytes),
+        "deleted_memories: " + text(data.deleted_memories),
+        "deleted_export_files: " + text(data.deleted_export_files),
+      ]);
+      closePruneConfirm();
+      await loadSnapshot({ memory_id: "" });
+      setMessage("清理完成", false);
+    }
+
+    document.getElementById("apply").addEventListener("click", () => {
+      loadSnapshot({ memory_id: "" }).catch(showError);
+    });
+
+    document.getElementById("deleteConfirmNo").addEventListener("click", () => {
+      closeDeleteConfirm();
+    });
+
+    document.getElementById("deleteConfirmYes").addEventListener("click", () => {
+      if (!pendingDelete) {
+        closeDeleteConfirm();
+        return;
+      }
+      const button = pendingDeleteButton;
+      if (!button) {
+        showError(new Error("删除失败：找不到当前按钮，请刷新页面后重试。"));
+        closeDeleteConfirm();
+        return;
+      }
+      deleteMemory(pendingDelete, button).catch((error) => showError(error, "删除失败："));
+    });
+
+    document.getElementById("editCancel").addEventListener("click", () => {
+      closeEditPanel();
+    });
+
+    document.getElementById("editSave").addEventListener("click", () => {
+      saveEdit().catch((error) => showError(error, "保存失败："));
+    });
+
+    document.getElementById("pruneCancel").addEventListener("click", () => {
+      closePruneConfirm();
+    });
+
+    document.getElementById("pruneConfirm").addEventListener("click", () => {
+      pruneConfirm().catch((error) => showError(error, "清理失败："));
+    });
+
+    document.addEventListener("click", async (event) => {
+      const deleteButton = event.target.closest("[data-action='delete-memory']");
+      if (deleteButton) {
+        event.preventDefault();
+        openDeleteConfirm(itemFromButton(deleteButton), deleteButton);
+        return;
+      }
+
+      const editButton = event.target.closest("[data-action='edit-memory']");
+      if (editButton) {
+        event.preventDefault();
+        openEditPanel(itemFromButton(editButton), editButton);
+        return;
+      }
+
+      const pinButton = event.target.closest("[data-action='pin-memory']");
+      if (pinButton) {
+        event.preventDefault();
+        setPinned(itemFromButton(pinButton), pinButton, true).catch((error) => showError(error, "处理失败："));
+        return;
+      }
+
+      const unpinButton = event.target.closest("[data-action='unpin-memory']");
+      if (unpinButton) {
+        event.preventDefault();
+        setPinned(itemFromButton(unpinButton), unpinButton, false).catch((error) => showError(error, "处理失败："));
+        return;
+      }
+
+      const exportMdButton = event.target.closest("[data-action='export-md']");
+      if (exportMdButton) {
+        event.preventDefault();
+        exportMemory("md", exportMdButton).catch((error) => showError(error, "导出失败："));
+        return;
+      }
+
+      const exportJsonlButton = event.target.closest("[data-action='export-jsonl']");
+      if (exportJsonlButton) {
+        event.preventDefault();
+        exportMemory("jsonl", exportJsonlButton).catch((error) => showError(error, "导出失败："));
+        return;
+      }
+
+      const pruneDryRunButton = event.target.closest("[data-action='prune-dry-run']");
+      if (pruneDryRunButton) {
+        event.preventDefault();
+        pruneDryRun(pruneDryRunButton).catch((error) => showError(error, "清理失败："));
+      }
+    });
+
+    function showError(error, prefix) {
+      closeDeleteConfirm();
+      if (prefix !== "保存失败：") {
+        closeEditPanel();
+      } else {
+        const saveButton = document.getElementById("editSave");
+        saveButton.disabled = false;
+        saveButton.textContent = "保存";
+        if (pendingEditButton) {
+          pendingEditButton.disabled = false;
+          pendingEditButton.textContent = "编辑";
+          delete pendingEditButton.dataset.loading;
+        }
+      }
+      if (prefix !== "清理失败：") {
+        closePruneConfirm();
+      } else {
+        const button = document.getElementById("pruneConfirm");
+        button.disabled = false;
+        button.textContent = "确认清理";
+      }
+      const rawMessage = error?.message || "load_failed";
+      const displayMessage = rawMessage.startsWith("Plugin Page bridge")
+        ? rawMessage
+        : (prefix || "操作失败：") + rawMessage;
+      setMessage(displayMessage, true);
+      const body = document.getElementById("items");
+      if (body && (!snapshot || !snapshot.items || snapshot.items.length === 0)) {
+        body.replaceChildren();
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 8;
+        cell.className = "error";
+        cell.textContent = error?.message || "load_failed";
+        row.appendChild(cell);
+        body.appendChild(row);
+      }
+    }
+
+    if (!pluginPageBridge()) {
+      showError(new Error("Plugin Page bridge 未加载，请从 AstrBot WebUI 插件页打开。"));
+    } else {
+      window.AstrBotPluginPage.ready()
+      .then(() => loadSnapshot())
+      .catch(showError);
+    }
+  </script>
+</body>
+</html>
